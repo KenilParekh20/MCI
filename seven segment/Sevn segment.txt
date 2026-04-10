@@ -1,0 +1,256 @@
+Sevn segment
+/*
+//Program that continuously displays numbers 0–9 sequentially on a 7-segment display with a 1-second delay between each digit.
+#include <avr/io.h>
+#include <util/delay.h>
+
+unsigned char digits[10] = {
+	0x3F, // 0
+	0x06, // 1
+	0x5B, // 2
+	0x4F, // 3
+	0x66, // 4
+	0x6D, // 5
+	0x7D, // 6
+	0x07, // 7
+	0x7F, // 8
+	0x6F  // 9
+};
+
+int main(void)
+{
+	DDRC = 0x7F;   // PC0–PC6 as output
+
+	while (1)
+	{
+		for (int i = 0; i < 10; i++)
+		{
+			PORTC = digits[i];
+			_delay_ms(1000);
+		}
+	}
+}*/
+
+
+
+
+
+/*
+//when button is pressed count should start again pressed than count should stop + reset
+#define F_CPU 8000000UL
+#include <avr/io.h>
+#include <util/delay.h>
+
+// Common cathode 7-segment 
+uint8_t digit[10] =
+{
+	0x3F, 0x06, 0x5B, 0x4F, 0x66,
+	0x6D, 0x7D, 0x07, 0x7F, 0x6F
+};
+
+int main(void)
+{
+	uint8_t num = 0;
+	uint8_t run = 0;
+	uint8_t prev_pb0 = 1;
+
+	uint16_t tick = 0;   // software timer
+
+	DDRA = 0xFF;   // 7-segment output
+	DDRB = 0x00;   // input
+	PORTB = 0x01;  // pull-up on PB0
+
+	PORTA = digit[num];
+
+	while (1)
+	{
+		uint8_t curr_pb0 = PINB & 0x01;
+
+		// SINGLE press toggle (instant) 
+		if (prev_pb0 && !curr_pb0)
+		{
+			run ^= 1;       // toggle start/stop
+			_delay_ms(15);  // debounce only
+		}
+
+		prev_pb0 = curr_pb0;
+
+		// counting logic 
+		if (run)
+		{
+			tick++;
+			if (tick >= 50)   // ~50 ms
+			{
+				tick = 0;
+				num++;
+				if (num == 10)
+				num = 0;
+
+				PORTA = digit[num];
+			}
+		}
+
+		_delay_ms(1);  // very small delay ? responsive buttons
+	}
+}
+*/
+
+
+/*
+// if button pressed once -> up counting
+// if pressed again -> down counting
+
+#define F_CPU 8000000UL
+#include <avr/io.h>
+#include <util/delay.h>
+
+// 7-segment codes (common cathode)
+unsigned char digit[10] =
+{
+	0x3F,0x06,0x5B,0x4F,0x66,
+	0x6D,0x7D,0x07,0x7F,0x6F
+};
+
+int main()
+{
+	DDRA = 0x7F;     // PA0–PA6 output
+	DDRB = 0x00;     // PORTB input
+	PORTB = 0x01;    // pull-up for PB0
+
+	unsigned char num = 0;
+	signed char dir = 1;
+	unsigned char prev = 1;
+
+	unsigned int tick = 0;
+
+	while(1)
+	{
+		unsigned char curr = PINB & 0x01;
+
+		// detect single press
+		if(prev && !curr)
+		{
+			dir = -dir;     // toggle direction
+			_delay_ms(20);  // debounce
+		}
+
+		prev = curr;
+
+		// fast loop timing
+		tick++;
+
+		if(tick >= 80)      // adjust speed here
+		{
+			tick = 0;
+
+			PORTA = digit[num];
+
+			if(dir == 1)
+			{
+				num++;
+				if(num == 10)
+				num = 0;
+			}
+			else
+			{
+				if(num == 0)
+				num = 9;
+				else
+				num--;
+			}
+		}
+
+		_delay_ms(1);       // very small delay
+	}
+}
+*/
+
+
+
+
+
+
+
+
+//if single button is pressed than is should count 0-9 and two is pressed than it should count 0-F
+#define F_CPU 8000000UL
+#include <avr/io.h>
+#include <util/delay.h>
+
+// Seven segment values (common cathode)
+int hex[16] =
+{
+	0x3F, //0
+	0x06, //1
+	0x5B, //2
+	0x4F, //3
+	0x66, //4
+	0x6D, //5
+	0x7D, //6
+	0x07, //7
+	0x7F, //8
+	0x6F, //9
+	0x77, //A
+	0x7C, //B
+	0x39, //C
+	0x5E, //D
+	0x79, //E
+	0x71  //F
+};
+
+int main(void)
+{
+	DDRA = 0xFF;   // PORTA output for SSD
+	DDRB = 0x00;   // PORTB input for button1
+	DDRD = 0x00;   // PORTD input for button2
+
+	PORTB = 0xFF;  // Enable pull-up resistor
+	PORTD = 0xFF;  // Enable pull-up resistor
+
+	while (1)
+	{
+		int b1 = !(PINB & 1);   // read button1
+		int b2 = !(PIND & 32);   // read button2
+
+		_delay_ms(30);   // debounce delay
+
+
+		// Both buttons not pressed
+		if(!b1 && !b2)
+		{
+			PORTA = 0x00;
+		}
+
+		// if  PB0 button  pressed then UP counter
+		else if(b1 && !b2)
+		{
+			for(int i=0;i<=9;i++)
+			{
+				PORTA = hex[i];
+				_delay_ms(100);
+			}
+		}
+
+		//if  PD5 button pressed then DOWN counter
+		else if(!b1 && b2)
+		{
+			for(int i=9;i>=0;i--)
+			{
+				PORTA = hex[i];
+				_delay_ms(100);
+			}
+		}
+
+		//if  Both PB0 and PD5  pressed then HEX counter 0 to F
+		else if(b1 && b2)
+		{
+			for(int i=0;i<16;i++)
+			{
+				PORTA = hex[i];
+				_delay_ms(100);
+			}
+		}
+	}
+}
+
+

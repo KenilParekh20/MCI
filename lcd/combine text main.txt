@@ -1,0 +1,98 @@
+combine text main
+
+/*
+ * combine-text.c
+ *
+ * Created: 3/30/2026 1:53:14 PM
+ * Author : aumla
+ */ 
+#define F_CPU 8000000UL
+#include <avr/io.h>
+#include <util/delay.h>
+
+// PB0 = RS
+// PB1 = E
+
+void lcd_cmd(unsigned char cmd)
+{
+	PORTC = cmd;
+	PORTB = 0x02;
+	_delay_ms(1);
+	PORTB = 0x00;
+}
+
+void lcd_data(unsigned char data)
+{
+	PORTC = data;
+	PORTB = 0x03;
+	_delay_ms(1);
+	PORTB = 0x01;
+}
+
+int main(void)
+{
+	DDRC = 0xFF;   // LCD data
+	DDRB = 0xFF;   // control
+
+	DDRD = 0x00;   // buttons input
+	PORTD = 0x0F;  // pull-ups PD0–PD3
+
+	int left_pos = 0;
+	int right_pos = 15;
+
+	_delay_ms(20);
+
+	// LCD init
+	lcd_cmd(0x38);
+	lcd_cmd(0x0C);
+	lcd_cmd(0x01);
+	lcd_cmd(0x06);
+
+	while (1)
+	{
+		// Clear and redraw both characters
+		lcd_cmd(0x01);
+
+		// LEFT TEXT (example: 'L')
+		lcd_cmd(0x80 + left_pos);
+		lcd_data('L');
+
+		// RIGHT TEXT (example: 'R')
+		lcd_cmd(0x80 + right_pos);
+		lcd_data('R');
+
+		// -------- BUTTONS --------
+
+		// B1: Left text ? RIGHT
+		if ((PIND & 0x01) == 0)
+		{
+			if (left_pos < 15) left_pos++;
+			_delay_ms(200);
+			while ((PIND & 0x01) == 0);
+		}
+
+		// B2: Left text ? LEFT
+		if ((PIND & 0x02) == 0)
+		{
+			if (left_pos > 0) left_pos--;
+			_delay_ms(200);
+			while ((PIND & 0x02) == 0);
+		}
+
+		// B3: Right text ? LEFT
+		if ((PIND & 0x04) == 0)
+		{
+			if (right_pos > 0) right_pos--;
+			_delay_ms(200);
+			while ((PIND & 0x04) == 0);
+		}
+
+		// B4: Right text ? RIGHT
+		if ((PIND & 0x08) == 0)
+		{
+			if (right_pos < 15) right_pos++;
+			_delay_ms(200);
+			while ((PIND & 0x08) == 0);
+		}
+	}
+}

@@ -1,0 +1,52 @@
+scroll name 1
+
+﻿#define F_CPU 8000000UL
+#include <avr/io.h>
+#include <util/delay.h>
+
+int main(void)
+{
+	DDRD = 0xFF;   // LCD data
+	DDRB = 0xFF;   // RS, E
+
+	_delay_ms(20);
+
+	// LCD init
+	PORTD = 0x38;
+	PORTB = 0x02; _delay_ms(1); PORTB = 0x00;
+
+	PORTD = 0x0C;
+	PORTB = 0x02; _delay_ms(1); PORTB = 0x00;
+
+	PORTD = 0x01;
+	PORTB = 0x02; _delay_ms(2); PORTB = 0x00;
+
+	PORTD = 0x06;
+	PORTB = 0x02; _delay_ms(1); PORTB = 0x00;
+
+	while(1)
+	{
+		for(int pos = 16; pos > 0; pos--)
+		{
+			// set cursor
+			PORTD = 0x80 + pos;
+			PORTB = 0x02; _delay_ms(1); PORTB = 0x00;
+
+			// print AUM
+			PORTD = 'A';
+			PORTB = 0x03; _delay_ms(1); PORTB = 0x01;
+
+			PORTD = 'U';
+			PORTB = 0x03; _delay_ms(1); PORTB = 0x01;
+
+			PORTD = 'M';
+			PORTB = 0x03; _delay_ms(1); PORTB = 0x01;
+
+			_delay_ms(150);
+
+			// clear
+			PORTD = 0x01;
+			PORTB = 0x02; _delay_ms(2); PORTB = 0x00;
+		}
+	}
+}

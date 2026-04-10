@@ -1,0 +1,63 @@
+print_name1.cpp
+﻿#define F_CPU 8000000UL
+#include <avr/io.h>
+#include <util/delay.h>
+
+// PB0 → RS
+// PB1 → E
+
+int main(void)
+{
+	DDRD = 0xF0;   // PD4–PD7 → LCD data
+	DDRB = 0xFF;   // control pins
+
+	_delay_ms(20);
+
+	// -------- LCD INIT --------
+
+	PORTD = 0x20;   // 0x02
+	PORTB = 0x02; _delay_ms(1); PORTB = 0x00;
+
+	PORTD = 0x20;   // 0x28 (upper)
+	PORTB = 0x02; _delay_ms(1); PORTB = 0x00;
+	PORTD = 0x80;   // (lower)
+	PORTB = 0x02; _delay_ms(1); PORTB = 0x00;
+
+	PORTD = 0x00;   // 0x0C (upper)
+	PORTB = 0x02; _delay_ms(1); PORTB = 0x00;
+	PORTD = 0xC0;   // (lower)
+	PORTB = 0x02; _delay_ms(1); PORTB = 0x00;
+
+	PORTD = 0x00;   // 0x01 (upper)
+	PORTB = 0x02; _delay_ms(1); PORTB = 0x00;
+	PORTD = 0x10;   // (lower)
+	PORTB = 0x02; _delay_ms(2); PORTB = 0x00;
+
+	PORTD = 0x00;   // 0x06 (upper)
+	PORTB = 0x02; _delay_ms(1); PORTB = 0x00;
+	PORTD = 0x60;   // (lower)
+	PORTB = 0x02; _delay_ms(1); PORTB = 0x00;
+
+	// -------- PRINT "AUM" --------
+
+	// A (0x41)
+	PORTD = 0x40;
+	PORTB = 0x03; _delay_ms(1); PORTB = 0x01;
+	PORTD = 0x10;
+	PORTB = 0x03; _delay_ms(1); PORTB = 0x01;
+
+	// U (0x55)
+	PORTD = 0x50;
+	PORTB = 0x03; _delay_ms(1); PORTB = 0x01;
+	PORTD = 0x50;
+	PORTB = 0x03; _delay_ms(1); PORTB = 0x01;
+
+	// M (0x4D)
+	PORTD = 0x40;
+	PORTB = 0x03; _delay_ms(1); PORTB = 0x01;
+	PORTD = 0xD0;
+	PORTB = 0x03; _delay_ms(1); PORTB = 0x01;
+
+	while(1);
+}
+

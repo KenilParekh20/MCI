@@ -1,0 +1,76 @@
+2 seven segment
+
+#include <avr/io.h>
+#include <util/delay.h>
+
+// Hex values for digits 0–9 for common cathode 7-segment
+unsigned char num[10] =
+{
+	0x3F, // 0
+	0x06, // 1
+	0x5B, // 2
+	0x4F, // 3
+	0x66, // 4
+	0x6D, // 5
+	0x7D, // 6
+	0x07, // 7
+	0x7F, // 8
+	0x6F  // 9
+};
+
+int main(void)
+{
+	DDRA = 0xFF;
+	DDRB = 0x03;
+	DDRC &= ~(1<<DDRC0); // PC0 is connected with button, so it is set as input, PC0=0 and other bits of PortC will remnain unchanged
+	PORTC |= (1<<PORTC0);// activated the pull up resistor of PC0 to provide stable operation
+	
+// check the button press	
+	display(count);
+	if (!(PINC & (1<<PC0)))
+	{
+		
+
+		count++;
+		if (count > 99)
+		count = 0;	
+	}
+	
+	
+	// display 00-99
+
+	for(int i = 0; i <= 99; i++)
+	{
+		int tens = i / 10;
+		int ones = i % 10;
+
+		for(int j = 0; j < 100; j++)
+		{
+			
+			PORTB = 0x01;
+			PORTA = num[tens];
+			_delay_ms(10);
+			
+			PORTB = 0x02;
+			PORTA = num[ones];
+			_delay_ms(10);
+		}
+	}
+	
+
+	//	DDRA = 0xFF;     
+	//	DDRB = 0x03;      
+//		DDRC &= ~(1<<PC0); 
+
+	//	PORTC |= (1<<PC0);
+
+		int count = 0;
+
+		while (1)
+		{
+			
+			for(int i=0; i<99; i++)
+			
+		}
+	}
+}

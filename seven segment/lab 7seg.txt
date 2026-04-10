@@ -1,0 +1,45 @@
+#include <avr/io.h>
+#include <util/delay.h>
+
+unsigned char seg[10] =
+{
+	0b00111111, //0
+	0b00000110, //1
+	0b01011011, //2
+	0b01001111, //3
+	0b01100110, //4
+	0b01101101, //5
+	0b01111101, //6
+	0b00000111, //7
+	0b01111111, //8
+	0b01101111  //9
+};
+
+int main(void)
+{
+	DDRA = 0xFF;   // segments output
+	DDRB = 0xFF;   // digit control
+
+	int count;
+	int i;
+
+	while (1)
+	{
+		for(count = 0; count <= 99; count++)
+		{
+			int tens  = count / 10;
+			int units = count % 10;
+
+			for(i=0;i<200;i++)
+			{
+				PORTA = seg[tens];
+				PORTB = 0b00000000;   // PB0 for Tens
+				_delay_ms(1);
+
+				PORTA = seg[units];
+				PORTB = 0b00000000;   // PB1 for Unit
+				_delay_ms(1);
+			}
+		}
+	}
+}

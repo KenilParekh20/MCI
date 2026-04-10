@@ -1,0 +1,63 @@
+4bit lcd main.c  
+
+#define F_CPU 8000000UL
+#include <avr/io.h>
+#include <util/delay.h>
+
+// PB0 ? RS
+// PB1 ? E
+
+int main(void)
+{
+	DDRD = 0xF0;   // PD4–PD7 ? LCD data
+	DDRB = 0xFF;   // control
+
+	_delay_ms(20);
+
+	// -------- LCD INIT --------
+
+	PORTD = 0x20; PORTB = 0x02; _delay_ms(1); PORTB = 0x00;   // 0x02
+
+	PORTD = 0x20; PORTB = 0x02; _delay_ms(1); PORTB = 0x00;   // 0x28
+	PORTD = 0x80; PORTB = 0x02; _delay_ms(1); PORTB = 0x00;
+
+	PORTD = 0x00; PORTB = 0x02; _delay_ms(1); PORTB = 0x00;   // 0x0C
+	PORTD = 0xC0; PORTB = 0x02; _delay_ms(1); PORTB = 0x00;
+
+	PORTD = 0x00; PORTB = 0x02; _delay_ms(1); PORTB = 0x00;   // 0x01
+	PORTD = 0x10; PORTB = 0x02; _delay_ms(2); PORTB = 0x00;
+
+	PORTD = 0x00; PORTB = 0x02; _delay_ms(1); PORTB = 0x00;   // 0x06
+	PORTD = 0x60; PORTB = 0x02; _delay_ms(1); PORTB = 0x00;
+
+	while(1)
+	{
+		for(int i = 16; i > 0; i--)
+		{
+			// cursor move
+			PORTD = (0x80 + i) & 0xF0;
+			PORTB = 0x02; _delay_ms(1); PORTB = 0x00;
+
+			PORTD = (0x80 + i) << 4;
+			PORTB = 0x02; _delay_ms(1); PORTB = 0x00;
+
+			// A (0x41)
+			PORTD = 0x40; PORTB = 0x03; _delay_ms(1); PORTB = 0x01;
+			PORTD = 0x10; PORTB = 0x03; _delay_ms(1); PORTB = 0x01;
+
+			// U (0x55)
+			PORTD = 0x50; PORTB = 0x03; _delay_ms(1); PORTB = 0x01;
+			PORTD = 0x50; PORTB = 0x03; _delay_ms(1); PORTB = 0x01;
+
+			// M (0x4D)
+			PORTD = 0x40; PORTB = 0x03; _delay_ms(1); PORTB = 0x01;
+			PORTD = 0xD0; PORTB = 0x03; _delay_ms(1); PORTB = 0x01;
+
+			_delay_ms(70);
+
+			// clear
+			PORTD = 0x00; PORTB = 0x02; _delay_ms(1); PORTB = 0x00;
+			PORTD = 0x10; PORTB = 0x02; _delay_ms(2); PORTB = 0x00;
+		}
+	}
+}
